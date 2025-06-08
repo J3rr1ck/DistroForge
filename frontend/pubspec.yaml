@@ -1,0 +1,24 @@
+name: distroforge_frontend
+description: A new Flutter project for DistroForge.
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0' # Compatible with Dart 3.4.1 used by Flutter 3.22.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.5.1
+  cupertino_icons: ^1.0.6
+  uuid: ^4.4.0 # For generating unique request IDs
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0 # Or a recent version like ^4.0.0
+
+flutter:
+  uses-material-design: true

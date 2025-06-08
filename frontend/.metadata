@@ -1,0 +1,22 @@
+# This file is used by Flutter's tooling to store project-specific metadata.
+# It is generated automatically by 'flutter create' and should not be edited manually.
+
+# For a desktop project, it might contain information about enabled platforms.
+# Version of Flutter used to create this project.
+version:
+  revision: "unknown" # As we are creating manually
+  channel: "stable"
+
+project_type: app # Indicates a Flutter application
+
+# If desktop platforms were enabled via 'flutter config --enable-<platform>-desktop'
+# and then 'flutter create', these might be reflected here or in platform-specific build files.
+# For manual setup, this is mostly a placeholder.
+# True desktop platform enablement involves more than just this file (e.g., CMake files for Linux/Windows, Xcode project for macOS).
+platforms:
+  linux: # Indicates linux desktop is intended
+  macos: # Indicates macos desktop is intended
+  windows: # Indicates windows desktop is intended
+  web: # Indicates web is intended
+  # android: # Example if android was also intended
+  # ios: # Example if ios was also intended
