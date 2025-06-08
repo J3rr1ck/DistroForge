@@ -7,7 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
-	"path/filepath" // Added for plugin registration path logic
+	// "path/filepath" // No longer needed here after NewArchPlugin changes
 	"strings"
 
 	"example.com/jsonrpcengine/plugin"
@@ -64,18 +64,9 @@ var pluginManager *plugin.PluginManager
 func main() {
 	pluginManager = plugin.NewPluginManager()
 
-	// Define root paths for plugins. These could come from config in a real app.
-	// Using /app/ as the base, assuming the container/build environment works from there.
-	projectsRoot := "/app/projects"
-	isosRoot := "/app/isos"
-	workRootBase := "/app/work" // Base for work directories
-
 	// Register Arch Plugin
-	archPlugin, err := arch.NewArchPlugin(
-		filepath.Join(projectsRoot), // Arch projects will be in /app/projects/<projectID>
-		filepath.Join(isosRoot),     // Arch ISOs will be in /app/isos/<projectID>
-		filepath.Join(workRootBase, "archiso"), // Arch work dirs in /app/work/archiso/<projectID>
-	)
+	// NewArchPlugin now determines its own paths based on user home directory
+	archPlugin, err := arch.NewArchPlugin()
 	if err != nil {
 		log.Fatalf("Failed to initialize Arch plugin: %v", err)
 	}

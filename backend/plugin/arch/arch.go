@@ -23,12 +23,38 @@ type ArchPlugin struct {
 }
 
 // NewArchPlugin creates and initializes a new ArchPlugin.
-func NewArchPlugin(projectsRoot, isosRoot, workRoot string) (*ArchPlugin, error) {
+// It now determines paths based on the user's home directory.
+func NewArchPlugin() (*ArchPlugin, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Printf("Warning: Could not get user home directory (%v), using current directory for .distroforge_data", err)
+		// Get current working directory as fallback base
+		currentDir, cwdErr := os.Getwd()
+		if cwdErr != nil {
+			// This is a more serious fallback, unlikely to happen but possible
+			log.Printf("Critical: Could not get current working directory (%v), using \".\" as homeDir fallback", cwdErr)
+			homeDir = "."
+		} else {
+			homeDir = currentDir
+		}
+		// To avoid cluttering the current directory directly if it's a fallback,
+		// still use a subdirectory.
+		homeDir = filepath.Join(homeDir, ".distroforge_data_fallback")
+		log.Printf("Fallback data directory will be: %s", homeDir)
+	}
+
+	projectsRoot := filepath.Join(homeDir, ".distroforge", "projects")
+	isosRoot := filepath.Join(homeDir, ".distroforge", "isos")
+	workRoot := filepath.Join(homeDir, ".distroforge", "work", "archiso")
+
 	for _, path := range []string{projectsRoot, isosRoot, workRoot} {
 		if err := os.MkdirAll(path, 0755); err != nil {
 			return nil, fmt.Errorf("failed to create directory %s: %w", path, err)
 		}
 	}
+
+	log.Printf("ArchPlugin initialized with paths: projectsRoot=%s, isosRoot=%s, workRoot=%s", projectsRoot, isosRoot, workRoot)
+
 	return &ArchPlugin{
 		projectsRoot: projectsRoot,
 		isosRoot:     isosRoot,
