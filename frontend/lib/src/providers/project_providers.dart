@@ -10,15 +10,20 @@ class ProjectListNotifier extends StateNotifier<List<Project>> {
 
   // Method to add a new project (typically called after creation via engine)
   Future<void> createProject(String distroId, String projectName) async {
+    debugPrint('ProjectListNotifier: createProject called with distroId: $distroId, projectName: $projectName');
     final engineService = _ref.read(engineServiceProvider);
     try {
+      debugPrint('ProjectListNotifier: Calling engineService.createProject...');
       // The EngineService.createProject already returns a Project object
       // based on the passed name and distroId, and the returned project_id.
       final newProject = await engineService.createProject(distroId, projectName);
+      debugPrint('ProjectListNotifier: Received project from engineService: ${newProject.id}');
       state = [...state, newProject];
+      debugPrint('ProjectListNotifier: State updated. New project count: ${state.length}');
     } catch (e) {
+      debugPrint('ProjectListNotifier: Error: $e');
       // Handle or rethrow error to be caught by UI
-      print("Error creating project in ProjectListNotifier: $e");
+      // print("Error creating project in ProjectListNotifier: $e"); // Redundant with debugPrint
       rethrow;
     }
   }

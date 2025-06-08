@@ -19,8 +19,15 @@ class ProjectCreationDialog extends ConsumerStatefulWidget {
 
 class _ProjectCreationDialogState extends ConsumerState<ProjectCreationDialog> {
   final _formKey = GlobalKey<FormState>();
-  String? _projectName;
+  // String? _projectName; // Replaced by _projectNameController
+  final _projectNameController = TextEditingController();
   Distro? _selectedDistroValue; // Store the selected Distro object
+
+  @override
+  void dispose() {
+    _projectNameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +41,7 @@ class _ProjectCreationDialogState extends ConsumerState<ProjectCreationDialog> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             TextFormField(
+              controller: _projectNameController, // Use controller
               decoration: const InputDecoration(labelText: 'Project Name'),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -41,9 +49,10 @@ class _ProjectCreationDialogState extends ConsumerState<ProjectCreationDialog> {
                 }
                 return null;
               },
-              onSaved: (value) {
-                _projectName = value;
-              },
+              // onSaved is not strictly needed if using controller, but can be kept
+              // onSaved: (value) {
+              //   // _projectName = value; // Controller holds the value
+              // },
             ),
             const SizedBox(height: 20),
             asyncDistros.when(
@@ -108,23 +117,45 @@ class _ProjectCreationDialogState extends ConsumerState<ProjectCreationDialog> {
         ElevatedButton(
           child: const Text('Create'),
           onPressed: () async {
+            debugPrint('Create button pressed.');
             if (_formKey.currentState!.validate()) {
-              _formKey.currentState!.save();
-              if (_projectName != null && _selectedDistroValue != null) {
+              debugPrint('Form is valid.');
+              _formKey.currentState!.save(); // Ensure onSaved is called if still used, or rely on controller
+
+              final projectName = _projectNameController.text;
+              final selectedDistro = _selectedDistroValue;
+
+              debugPrint('Selected distro ID: ${selectedDistro?.id}');
+              debugPrint('Entered project name: $projectName');
+
+              if (projectName.isNotEmpty && selectedDistro != null) {
                 try {
-                  // Call the notifier method to create the project
-                  await ref.read(projectListProvider.notifier).createProject(_selectedDistroValue!.id, _projectName!);
-                  Navigator.of(context).pop(); // Close dialog
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Project "$_projectName" created successfully!')),
-                  );
+                  debugPrint('Calling projectListProvider.notifier.createProject...');
+                  await ref.read(projectListProvider.notifier).createProject(selectedDistro.id, projectName);
+                  debugPrint('Project creation method called.');
+
+                  if (mounted) { // Check if the widget is still in the tree
+                    Navigator.of(context).pop(); // Close dialog
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Project "$projectName" created successfully!')),
+                    );
+                  }
                   // Optionally, navigate to the project details screen
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error creating project: $e')),
-                  );
+                  debugPrint('Error during project creation call: $e');
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error creating project: $e')),
+                    );
+                  }
                 }
+              } else {
+                debugPrint('Project name or selected distro is null/empty after validation.');
+                debugPrint('Project Name actual: $projectName');
+                debugPrint('Selected Distro actual: ${selectedDistro?.id}');
               }
+            } else {
+              debugPrint('Form is invalid.');
             }
           },
         ),

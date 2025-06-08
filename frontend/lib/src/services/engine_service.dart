@@ -252,30 +252,24 @@ class EngineService {
   }
 
   Future<Project> createProject(String distroId, String projectName) async {
-    // Assuming the backend's createProject now expects a project_name or similar.
+    debugPrint('EngineService: createProject called with distroId: $distroId, projectName: $projectName');
     // The API.md for engine.createProject only lists 'distro_id'.
-    // Let's assume for now the backend can take additional params or this needs adjustment.
-    // For this example, we'll send both, but the backend might only use distro_id from API.md.
-    // The Go backend's engine.createProject handler only parses "distro_id".
-    // The plugin's CreateProject might take more, but that's an internal detail.
-    // For now, stick to API.md for the direct call.
-    // The `projectName` would be used at a higher level or if API changes.
-    final response = await _sendRequestInternal('engine.createProject', {'distro_id': distroId});
-    // API.md says: { "project_id": "string" }
-    // We need to construct a Project object. We're missing the name and distroId from the response directly.
-    // This suggests the Project model in Flutter might need to be populated differently after creation,
-    // or the createProject API method on EngineService should just return project_id.
-    // Let's assume for now it just returns the ID, and higher layers manage the full Project object.
-    // OR, the `project.getDetails` should be called immediately after.
+    // The Go backend's engine.createProject handler currently only parses "distro_id".
+    // The `projectName` is used here to construct the Flutter-side `Project` model object,
+    // as the backend response for createProject only returns `project_id`.
+    debugPrint('EngineService: Calling _sendRequestInternal for engine.createProject with distroId: $distroId');
+    try {
+      final response = await _sendRequestInternal('engine.createProject', {'distro_id': distroId});
+      debugPrint('EngineService: Response from engine.createProject: $response');
 
-    // For a more complete Project object, we'd typically call getDetails right after.
-    // For now, let's return a partial Project or just the ID.
-    // Let's adjust to return a simple map for now, or define a specific response model.
-    // Project.fromJson expects name and distroId which are not in the response.
-    // So, let's return the raw map or a dedicated response type.
-
-    // Returning a basic Project object for now, using the passed projectName and distroId.
-    return Project(id: response['project_id'] as String, name: projectName, distroId: distroId);
+      final projectId = response['project_id'] as String;
+      final project = Project(id: projectId, name: projectName, distroId: distroId);
+      debugPrint('EngineService: Constructed Project object with id: ${project.id}');
+      return project;
+    } catch (e) {
+      debugPrint('EngineService: Error in createProject: $e');
+      rethrow;
+    }
   }
 
   Future<Map<String, dynamic>> getProjectDetails(String projectId) async {
