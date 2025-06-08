@@ -312,6 +312,21 @@ class EngineService {
     return await _sendRequestInternal('project.getBuildStatus', {'project_id': projectId, 'build_id': buildId});
   }
 
+  Future<void> setHostname(String projectId, String hostname) async {
+    await _sendRequestInternal('project.setHostname', {'project_id': projectId, 'hostname': hostname});
+  }
+
+  Future<Map<String, dynamic>> getHostname(String projectId) async { // Corresponds to API which returns { "hostname": "string" }
+    return await _sendRequestInternal('project.getHostname', {'project_id': projectId});
+  }
+
+  Future<void> setBootloader(String projectId, String bootloader) async {
+    await _sendRequestInternal('project.setBootloader', {'project_id': projectId, 'bootloader': bootloader});
+  }
+
+  Future<Map<String, dynamic>> getBootloader(String projectId) async { // Corresponds to API which returns { "bootloader": "string" }
+    return await _sendRequestInternal('project.getBootloader', {'project_id': projectId});
+  }
+
   // Add other type-safe methods here corresponding to API.md
-  // e.g., setHostname, getHostname, setBootloader, getBootloader
 }

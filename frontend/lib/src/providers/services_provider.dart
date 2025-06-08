@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:distroforge_frontend/src/services/engine_service.dart';
+import 'package:distroforge_frontend/src/models/distro.dart'; // Added import for Distro model
 
 // Provider for the EngineService
 // Using a simple Provider as EngineService manages its own state internally.

@@ -54,31 +54,17 @@ final projectPackagesProvider = FutureProvider.family<List<String>, String>((ref
 // Provider for hostname of a specific project
 final projectHostnameProvider = FutureProvider.family<String?, String>((ref, projectId) async {
   final engineService = ref.watch(engineServiceProvider);
-  // Assuming getHostname might return null or throw if not set.
-  // The engine service's getHostname needs to be defined or adjusted.
-  // For now, let's assume it's part of getProjectDetails or a new method.
-  // Let's add getHostname to EngineService:
-  // Future<String?> getHostname(String projectId) async {
-  //   final response = await _sendRequestInternal('project.getHostname', {'project_id': projectId});
-  //   return response['hostname'] as String?;
-  // }
-  // This is simplified; actual parsing might be needed.
-  // For now, let's assume getProjectDetails contains hostname.
-  final details = await ref.watch(projectDetailsProvider(projectId).future);
-  return details['hostname'] as String?;
+  // Call the specific method on engineService
+  final response = await engineService.getHostname(projectId); // getHostname returns Future<Map<String, dynamic>>
+  return response['hostname'] as String?; // Extract the hostname string
 });
 
 // Provider for bootloader of a specific project
 final projectBootloaderProvider = FutureProvider.family<String?, String>((ref, projectId) async {
   final engineService = ref.watch(engineServiceProvider);
-  // Similar to hostname, assuming it's part of getProjectDetails for now.
-  // Let's add getBootloader to EngineService:
-  // Future<String?> getBootloader(String projectId) async {
-  //   final response = await _sendRequestInternal('project.getBootloader', {'project_id': projectId});
-  //   return response['bootloader'] as String?;
-  // }
-  final details = await ref.watch(projectDetailsProvider(projectId).future);
-  return details['bootloader'] as String?;
+  // Call the specific method on engineService
+  final response = await engineService.getBootloader(projectId); // getBootloader returns Future<Map<String, dynamic>>
+  return response['bootloader'] as String?; // Extract the bootloader string
 });
 
 

@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath" // Added for plugin registration path logic
 	"strings"
 
 	"example.com/jsonrpcengine/plugin"
@@ -214,9 +215,9 @@ func handleEngineCommands(req JSONRPCRequest, method string) JSONRPCResponse {
 func handleProjectCommands(req JSONRPCRequest, method string) JSONRPCResponse {
 	// All project commands require a project_id as the first parameter.
 	// We need to parse it to find the correct plugin.
-	var baseParams struct {
-		ProjectID string `json:"project_id"`
-	}
+	// var baseParams struct { // This was unused due to direct map lookup
+	// 	ProjectID string `json:"project_id"`
+	// }
 	// This is a bit tricky as params structure varies.
 	// A common approach is to unmarshal into a map[string]json.RawMessage first,
 	// extract project_id, then pass the rest to the plugin.
@@ -260,29 +261,33 @@ func handleProjectCommands(req JSONRPCRequest, method string) JSONRPCResponse {
 		return JSONRPCResponse{JSONRPC: "2.0", Result: details, ID: req.ID}
 
 	case "setPackages":
-		var params struct {
-			Packages []string `json:"packages"`
-		}
-		if err := json.Unmarshal(req.Params, &params); err != nil { // req.Params already has project_id, this will fail.
-			// We need to pass only the packages part to this unmarshal or handle params better.
-			// For now, let's assume params only contains packages after project_id is extracted.
-			// This part needs robust parameter handling.
-			// A quick fix: re-marshal tempParams excluding project_id
-			packageParamsMap, _ := tempParams["packages"].([]interface{})
-			var packages []string
-			for _, pkg := range packageParamsMap {
-				packages = append(packages, pkg.(string))
-			}
+		// var params struct { // This was unused
+		// 	Packages []string `json:"packages"`
+		// }
+		// The previous logic using json.Unmarshal(req.Params, &params) would fail because req.Params
+		// is the full parameter object, not just the 'packages' field.
+		// The quick fix correctly extracts packages from tempParams.
 
-			err := p.SetPackages(projectID, packages)
-			if err != nil {
-				return JSONRPCResponse{JSONRPC: "2.0", Error: &RPCError{Code: InternalErrorCode, Message: err.Error()}, ID: req.ID}
-			}
-			return JSONRPCResponse{JSONRPC: "2.0", Result: map[string]bool{"success": true}, ID: req.ID}
+		packagesVal, ok := tempParams["packages"]
+		if !ok {
+			return JSONRPCResponse{JSONRPC: "2.0", Error: &RPCError{Code: InvalidParamsCode, Message: "Missing 'packages' in params for setPackages"}, ID: req.ID}
 		}
-		// This path will likely not be hit due to the above quick fix.
-		// Proper solution involves a custom unmarshaler or passing req.Params directly if plugin methods expect raw json.
-		err := p.SetPackages(projectID, params.Packages)
+
+		packageInterfaceList, ok := packagesVal.([]interface{})
+		if !ok {
+			return JSONRPCResponse{JSONRPC: "2.0", Error: &RPCError{Code: InvalidParamsCode, Message: "'packages' must be a list for setPackages"}, ID: req.ID}
+		}
+
+		var packages []string
+		for _, pkgInterface := range packageInterfaceList {
+			pkgStr, ok := pkgInterface.(string)
+			if !ok {
+				return JSONRPCResponse{JSONRPC: "2.0", Error: &RPCError{Code: InvalidParamsCode, Message: "All items in 'packages' must be strings"}, ID: req.ID}
+			}
+			packages = append(packages, pkgStr)
+		}
+
+		err := p.SetPackages(projectID, packages)
 		if err != nil {
 			return JSONRPCResponse{JSONRPC: "2.0", Error: &RPCError{Code: InternalErrorCode, Message: err.Error()}, ID: req.ID}
 		}
@@ -297,11 +302,19 @@ func handleProjectCommands(req JSONRPCRequest, method string) JSONRPCResponse {
 		return JSONRPCResponse{JSONRPC: "2.0", Result: pkgs, ID: req.ID}
 
 	case "setBootloader":
-		var params struct {
-			Bootloader string `json:"bootloader"`
-		}
+		// var params struct { // This was unused
+		// 	Bootloader string `json:"bootloader"`
+		// }
 		// Similar param handling issue as setPackages
-		bootloaderStr, _ := tempParams["bootloader"].(string)
+		bootloaderVal, ok := tempParams["bootloader"]
+		if !ok {
+			return JSONRPCResponse{JSONRPC: "2.0", Error: &RPCError{Code: InvalidParamsCode, Message: "Missing 'bootloader' in params for setBootloader"}, ID: req.ID}
+		}
+		bootloaderStr, ok := bootloaderVal.(string)
+		if !ok {
+		    return JSONRPCResponse{JSONRPC: "2.0", Error: &RPCError{Code: InvalidParamsCode, Message: "'bootloader' must be a string"}, ID: req.ID}
+		}
+
 		err := p.SetBootloader(projectID, bootloaderStr)
 		if err != nil {
 			return JSONRPCResponse{JSONRPC: "2.0", Error: &RPCError{Code: InternalErrorCode, Message: err.Error()}, ID: req.ID}
@@ -317,11 +330,19 @@ func handleProjectCommands(req JSONRPCRequest, method string) JSONRPCResponse {
 		return JSONRPCResponse{JSONRPC: "2.0", Result: bootloader, ID: req.ID}
 
 	case "setHostname":
-		var params struct {
-			Hostname string `json:"hostname"`
-		}
+		// var params struct { // This was unused
+		// 	Hostname string `json:"hostname"`
+		// }
 		// Similar param handling issue
-		hostnameStr, _ := tempParams["hostname"].(string)
+		hostnameVal, ok := tempParams["hostname"]
+		if !ok {
+			return JSONRPCResponse{JSONRPC: "2.0", Error: &RPCError{Code: InvalidParamsCode, Message: "Missing 'hostname' in params for setHostname"}, ID: req.ID}
+		}
+		hostnameStr, ok := hostnameVal.(string)
+		if !ok {
+		    return JSONRPCResponse{JSONRPC: "2.0", Error: &RPCError{Code: InvalidParamsCode, Message: "'hostname' must be a string"}, ID: req.ID}
+		}
+
 		err := p.SetHostname(projectID, hostnameStr)
 		if err != nil {
 			return JSONRPCResponse{JSONRPC: "2.0", Error: &RPCError{Code: InternalErrorCode, Message: err.Error()}, ID: req.ID}

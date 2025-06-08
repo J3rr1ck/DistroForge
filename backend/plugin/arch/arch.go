@@ -1,12 +1,16 @@
 package arch
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
+	"time"
 
 	"example.com/jsonrpcengine/plugin" // Module path from go.mod
 )

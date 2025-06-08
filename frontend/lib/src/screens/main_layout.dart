@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+// import 'package:flutter/material.dart'; // Removed duplicate import
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:distroforge_frontend/src/screens/settings_screen.dart';
 import 'package:distroforge_frontend/src/widgets/project_creation_dialog.dart';
 
-import 'package:distroforge_frontend/src/models/project.dart';
+// import 'package:distroforge_frontend/src/models/project.dart'; // Unused import
 import 'package:distroforge_frontend/src/providers/project_providers.dart';
 import 'package:distroforge_frontend/src/screens/project_details_screen.dart';
 
@@ -52,12 +53,12 @@ class MainLayout extends ConsumerWidget {
         },
         tooltip: 'Create Project',
         child: const Icon(Icons.add),
-      ),
+      ) : null, // Explicit null and added comma
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: pageIndex,
         onTap: (index) {
           ref.read(mainPageIndexProvider.notifier).state = index;
-        },
+        }, // Comma is fine here
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.folder_copy_outlined),

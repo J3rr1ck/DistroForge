@@ -201,7 +201,7 @@ class _ConfigurationTabState extends ConsumerState<ConfigurationTab> {
   @override
   Widget build(BuildContext context) {
     // Use specific providers for hostname and bootloader to get live updates
-    final hostnameAsync = ref.watch(projectHostnameProvider(widget.projectId));
+    // final hostnameAsync = ref.watch(projectHostnameProvider(widget.projectId)); // This was unused
     final bootloaderAsync = ref.watch(projectBootloaderProvider(widget.projectId));
 
 
